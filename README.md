@@ -294,6 +294,12 @@ Para más detalles, consulta [BACKEND_REQUIREMENTS.md](BACKEND_REQUIREMENTS.md)
 
 ---
 
+## 🎓 Desarrollado por Rodrigo Daniel Diaz Isla
+
+Prueba Técnica - Mobile con Flutter
+
+---
+
 <div align="center">
 
 **Hecho con Flutter**
