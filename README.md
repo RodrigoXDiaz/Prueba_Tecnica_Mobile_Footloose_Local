@@ -1,4 +1,4 @@
-# Footloose Catalog
+# Footloose Catálogo
 
 <div align="center">
 
@@ -16,7 +16,7 @@
 
 ## Descripción
 
-Footloose Catalog es una aplicación empresarial desarrollada en Flutter que permite la gestión integral de un catálogo de productos con sistema de roles, notificaciones push en tiempo real y herramientas avanzadas para administradores.
+Footloose Catálogo es una aplicación empresarial desarrollada en Flutter que permite la gestión integral de un catálogo de productos con sistema de roles, notificaciones push en tiempo real y herramientas avanzadas para administradores.
 
 ### Casos de Uso
 
@@ -294,48 +294,9 @@ Para más detalles, consulta [BACKEND_REQUIREMENTS.md](BACKEND_REQUIREMENTS.md)
 
 ---
 
-## Estructura de Datos
+## 🎓 Desarrollado por Rodrigo Daniel Diaz Isla
 
-### Producto
-```dart
-class ProductEntity {
-  final String id;
-  final String name;
-  final String brand;
-  final String model;
-  final String color;
-  final String size;
-  final double price;
-  final int? stock;
-  final String? description;
-  final String? imageUrl;
-  final DateTime? createdAt;
-  final DateTime? updatedAt;
-}
-```
-
-### Usuario
-```dart
-class UserEntity {
-  final String id;
-  final String email;
-  final String name;
-  final bool isAdmin;
-  final String? token;
-}
-```
-
----
-
-## Contribuir
-
-Las contribuciones son bienvenidas. Por favor:
-
-1. Fork el proyecto
-2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add: nueva característica'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
+Prueba Técnica - Mobile con Flutter
 
 ---
 
