@@ -1,6 +1,6 @@
 class ApiConstants {
   // URL del backend (configurada para web en Chrome)
-  static const String baseUrl = 'http://localhost:3000';
+  static const String baseUrl = 'https://prueba-tecnica-backend-footloose.onrender.com';
   static const String apiVersion = '/api/v1';
 
   // Auth Endpoints
