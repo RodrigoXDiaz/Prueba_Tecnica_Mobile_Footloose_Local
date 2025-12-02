@@ -26,7 +26,7 @@ dependencies:
   # UI & Utils
   cached_network_image: ^3.3.0
   image_picker: ^1.0.7
-  file_picker: ^6.1.1
+  file_picker: ^8.0.0
   flutter_svg: ^2.0.9
   intl: ^0.18.1
   google_fonts: ^6.1.0

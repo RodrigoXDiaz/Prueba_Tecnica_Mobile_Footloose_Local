@@ -1,4 +1,4 @@
-import 'dart:html' as html;
+import 'package:flutter/foundation.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -6,6 +6,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/di/injection.dart';
 import '../../../core/utils/format_helper.dart';
+import '../../../core/utils/download_helper.dart';
 import '../../bloc/auth/auth_bloc.dart';
 import '../../bloc/auth/auth_state.dart';
 import '../../bloc/product/product_bloc.dart';
@@ -13,6 +14,9 @@ import '../../bloc/product/product_event.dart';
 import '../../bloc/product/product_state.dart';
 import '../../widgets/loading_widget.dart';
 import 'product_form_screen.dart';
+
+// Importación condicional para web
+import 'web_download_stub.dart' if (dart.library.html) 'dart:html' as html;
 
 class ProductDetailScreen extends StatelessWidget {
   final String productId;
@@ -107,7 +111,7 @@ class ProductDetailScreen extends StatelessWidget {
           listeners: [
             // Listener para ProductBloc
             BlocListener<ProductBloc, ProductState>(
-              listener: (context, state) {
+              listener: (context, state) async {
                 if (state is ProductError) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -116,20 +120,47 @@ class ProductDetailScreen extends StatelessWidget {
                     ),
                   );
                 } else if (state is ProductPdfGenerated) {
-                  // Descargar el archivo PDF en el navegador
-                  final blob = html.Blob([state.pdfBytes], 'application/pdf');
-                  final url = html.Url.createObjectUrlFromBlob(blob);
-                  html.AnchorElement(href: url)
-                    ..setAttribute('download', 'producto.pdf')
-                    ..click();
-                  html.Url.revokeObjectUrl(url);
+                  // Descargar el archivo PDF
+                  if (kIsWeb) {
+                    // Para web, usar dart:html
+                    final blob = html.Blob([state.pdfBytes], 'application/pdf');
+                    final url = html.Url.createObjectUrlFromBlob(blob);
+                    html.AnchorElement(href: url)
+                      ..setAttribute('download', 'producto.pdf')
+                      ..click();
+                    html.Url.revokeObjectUrl(url);
 
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('PDF descargado exitosamente'),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('PDF descargado exitosamente'),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                  } else {
+                    // Para móvil, guardar archivo
+                    final filePath = await DownloadHelper.saveFile(
+                      bytes: state.pdfBytes,
+                      fileName:
+                          'producto_${DateTime.now().millisecondsSinceEpoch}.pdf',
+                    );
+
+                    if (filePath != null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('PDF guardado en: $filePath'),
+                          backgroundColor: Colors.green,
+                          duration: const Duration(seconds: 5),
+                        ),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Error al guardar el PDF'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  }
 
                   // Recargar el producto para volver al estado normal
                   context.read<ProductBloc>().add(LoadProductById(productId));

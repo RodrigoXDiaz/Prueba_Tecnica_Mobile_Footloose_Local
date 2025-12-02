@@ -1,4 +1,4 @@
-import 'dart:html' as html;
+import 'package:flutter/foundation.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -8,6 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/di/injection.dart';
 import '../../../core/utils/format_helper.dart';
+import '../../../core/utils/download_helper.dart';
 import '../../../data/datasources/local/storage_service.dart';
 import '../../../domain/entities/product_entity.dart';
 import '../../bloc/auth/auth_bloc.dart';
@@ -18,6 +19,9 @@ import '../../bloc/product/product_state.dart';
 import '../../widgets/loading_widget.dart';
 import 'product_detail_screen.dart';
 import 'product_form_screen.dart';
+
+// Importación condicional para web
+import 'web_download_stub.dart' if (dart.library.html) 'dart:html' as html;
 
 class ProductListScreen extends StatefulWidget {
   const ProductListScreen({super.key});
@@ -57,13 +61,33 @@ class _ProductListScreenState extends State<ProductListScreen> {
         ));
   }
 
-  void _downloadFile(List<int> bytes, String fileName, String mimeType) {
-    final blob = html.Blob([bytes], mimeType);
-    final url = html.Url.createObjectUrlFromBlob(blob);
-    html.AnchorElement(href: url)
-      ..setAttribute('download', fileName)
-      ..click();
-    html.Url.revokeObjectUrl(url);
+  Future<void> _downloadFile(
+      List<int> bytes, String fileName, String mimeType) async {
+    if (kIsWeb) {
+      // Para web, usar dart:html
+      final blob = html.Blob([bytes], mimeType);
+      final url = html.Url.createObjectUrlFromBlob(blob);
+      html.AnchorElement(href: url)
+        ..setAttribute('download', fileName)
+        ..click();
+      html.Url.revokeObjectUrl(url);
+    } else {
+      // Para móvil, guardar archivo
+      final filePath = await DownloadHelper.saveFile(
+        bytes: bytes,
+        fileName: fileName,
+      );
+
+      if (filePath != null && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Archivo guardado en: $filePath'),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      }
+    }
   }
 
   void _showFilterDialog() {
@@ -416,7 +440,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
         Expanded(
           child: BlocConsumer<ProductBloc, ProductState>(
-            listener: (context, state) {
+            listener: (context, state) async {
               if (state is ProductError) {
                 if (_isImporting &&
                     Navigator.canPop(context) &&
@@ -455,14 +479,16 @@ class _ProductListScreenState extends State<ProductListScreen> {
                 if (Navigator.canPop(context) && context.mounted) {
                   Navigator.of(context).pop();
                 }
-                _downloadFile(state.fileBytes, 'productos.xlsx',
+                await _downloadFile(state.fileBytes, 'productos.xlsx',
                     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Excel descargado exitosamente'),
-                    backgroundColor: Colors.green,
-                  ),
-                );
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Excel descargado exitosamente'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                }
               }
             },
             builder: (context, state) {
